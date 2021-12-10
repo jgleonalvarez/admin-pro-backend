@@ -1,0 +1,7 @@
+https://expressjs.com/
+https://www.npmjs.com/package/nodemon
+https://cloud.mongodb.com/
+https://mongoosejs.com/
+
+npm i dotenv
+npm i cors  
