@@ -6,12 +6,23 @@ const Usuario = require('../models/usuario');
 
 const getUsuarios = async (req, res) => {
 
-    const usuarios = await Usuario.find({}, 'nombre email google role');
+    const limit = Number(req.query.limit) || 5;
+    const page = Number(req.query.page) || 0;
 
-    res.json({
-        ok: true,
-        usuarios,
-    });
+    const [ usuarios, total ] = await Promise.all([
+
+        Usuario.find({}, 'nombre email google role img')
+            .skip(page)
+            .limit(limit),
+
+        Usuario.countDocuments(),
+    ]);
+
+res.json({
+    ok: true,
+    usuarios,
+    total
+});
 };
 
 const crearUsuario = async (req, res = response) => {
