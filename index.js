@@ -16,6 +16,9 @@ app.use(express.json());
 // Base de datos
 dbConn();
 
+// Directorio público
+app.use(express.static('public'));
+
 // Rutas
 app.get('/', (req, res) => {
 
