@@ -26,6 +26,6 @@ router.put('/:id', [
     validarCampos,
 ], actualizarMedico)
 
-router.delete('/:id', borrarMedico);
+router.delete('/:id', validarJWT, borrarMedico);
 
 module.exports = router;
