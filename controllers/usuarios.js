@@ -9,7 +9,7 @@ const getUsuarios = async (req, res) => {
     const limit = Number(req.query.limit) || 5;
     const page = Number(req.query.page) || 0;
 
-    const [ usuarios, total ] = await Promise.all([
+    const [usuarios, total] = await Promise.all([
 
         Usuario.find({}, 'nombre email google role img')
             .skip(page)
@@ -18,11 +18,11 @@ const getUsuarios = async (req, res) => {
         Usuario.countDocuments(),
     ]);
 
-res.json({
-    ok: true,
-    usuarios,
-    total
-});
+    res.json({
+        ok: true,
+        usuarios,
+        total
+    });
 };
 
 const crearUsuario = async (req, res = response) => {
@@ -84,7 +84,7 @@ const actualizarUsuario = async (req, res = response) => {
 
         // Actualizaciones    
         const { password, google, email, ...campos } = req.body;
-
+        console.log(usuarioDB.email, email);
         if (usuarioDB.email !== email) {
             const existeEmail = await Usuario.findOne({ email });
 
@@ -96,7 +96,14 @@ const actualizarUsuario = async (req, res = response) => {
             }
         }
 
-        campos.email = email;
+        if (!usuarioDB.google) {
+            campos.email = email;
+        } else if ( usuarioDB.email !== email ){
+            return res.status(400).json({
+                ok: false,
+                msg: 'La cuenta es de google, no se puede cambiar el correo.'
+            });
+        }
 
         const usuarioUpdated = await Usuario.findByIdAndUpdate(uid, campos, { new: true });
 

@@ -1,24 +1,56 @@
 const { response } = require("express");
-const Medico = require('../models/medico');
+const Medico = require("../models/medico");
 
 const getMedicos = async (req, res = response) => {
+  const limit = Number(req.query.limit) || 5;
+  const page = Number(req.query.page) || 0;
 
-  const medicos = await Medico.find()
-    .populate('usuario', 'nombre img')
-    .populate('hospital', 'nombre')
-    ;
+  const [medicos, total] = await Promise.all([
+    Medico.find()
+      .populate("usuario", "nombre img")
+      .populate("hospital", "nombre")
+      .skip(page)
+      .limit(limit),
+
+    Medico.countDocuments(),
+  ]);
+
   res.json({
     ok: true,
-    medicos
+    medicos,
+    total,
   });
 };
 
-const crearMedico = async (req, res = response) => {
+const getMedico = async (req, res = response) => {
+  const id = req.params.id;  
 
+  try {
+
+    const medico = await Medico.findById(id)
+      .populate("usuario", "nombre img")
+      .populate("hospital", "nombre");
+
+      // console.log(medico);
+
+    res.json({
+      ok: true,
+      medico,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      msg: "Hable con el administador",
+      error,
+    });
+  }
+};
+
+const crearMedico = async (req, res = response) => {
   const uid = req.uid;
   const medico = new Medico({
     usuario: uid,
-    ...req.body
+    ...req.body,
   });
 
   try {
@@ -26,25 +58,22 @@ const crearMedico = async (req, res = response) => {
 
     return res.json({
       ok: true,
-      hospital: medicoDB
+      medico: medicoDB,
     });
-
   } catch (error) {
     return res.status(500).json({
       ok: false,
-      msg: 'Hable con el administador',
-      error
+      msg: "Hable con el administador",
+      error,
     });
   }
 };
 
 const actualizarMedico = async (req, res = response) => {
-
   const uid = req.uid;
   const id = req.params.id;
-  
-  try {
 
+  try {
     const medico = Medico.findById(id);
 
     if (!medico) {
@@ -54,18 +83,20 @@ const actualizarMedico = async (req, res = response) => {
         error,
       });
     }
-    
+
     const cambios = {
       ...req.body,
-      usuario: uid
-    }
+      usuario: uid,
+    };
 
-    const medicoUpdated = await Medico.findByIdAndUpdate(id, cambios, { new: true });
+    const medicoUpdated = await Medico.findByIdAndUpdate(id, cambios, {
+      new: true,
+    });
 
     res.json({
       ok: true,
       msg: "El médico se ha actualizado",
-      medicoUpdated
+      medico: medicoUpdated,
     });
   } catch (error) {
     res.status(500).json({
@@ -77,11 +108,9 @@ const actualizarMedico = async (req, res = response) => {
 };
 
 const borrarMedico = async (req, res = response) => {
-
   const id = req.params.id;
 
   try {
-
     const medico = Medico.findById(id);
 
     if (!medico) {
@@ -98,7 +127,6 @@ const borrarMedico = async (req, res = response) => {
       ok: true,
       msg: "Médico eliminado",
     });
-
   } catch (error) {
     res.status(500).json({
       ok: false,
@@ -110,6 +138,7 @@ const borrarMedico = async (req, res = response) => {
 
 module.exports = {
   getMedicos,
+  getMedico,
   crearMedico,
   actualizarMedico,
   borrarMedico,

@@ -45,7 +45,7 @@ const login = async (req, res = response) => {
 
 const googleSignIn = async (req, res = response) => {
   const googleToken = req.body.token;
-  console.log(googleToken);
+  console.log('googleToken => ', googleToken);
 
   try {
     const { name, email, picture } = await googleVerify(googleToken);
@@ -94,10 +94,13 @@ const renewToken = async (req, res = response) => {
     // Generar el TOKEN - JWT
     const token = await generarJwt(uid);
 
+    const usuario = await Usuario.findById(uid);
+
     res.json({
         ok: true,
         uid,
-        token
+        token,
+        usuario
     })
 };
 
